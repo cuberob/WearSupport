@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="nl.vu.wearsupport" >
+
+    <uses-feature android:name="android.hardware.type.watch" />
+
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
+    <!-- Required to act as a custom watch face. -->
+    <uses-permission android:name="com.google.android.permission.PROVIDE_BACKGROUND" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Required to override default menu behaviour. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.DeviceDefault"
+        tools:replace="android:icon" >
+        <service
+            android:name=".services.CustomWatchFaceService"
+            android:label="@string/watch_name"
+            android:permission="android.permission.BIND_WALLPAPER" >
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/watch_face" />
+            <meta-data
+                android:name="com.google.android.wearable.watchface.preview"
+                android:resource="@drawable/preview_digital" />
+            <meta-data
+                android:name="com.google.android.wearable.watchface.preview_circular"
+                android:resource="@drawable/preview_digital_circular" />
+
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+
+                <category android:name="com.google.android.wearable.watchface.category.WATCH_FACE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".services.ActivityMonitorService"
+            android:icon="@mipmap/ic_launcher"
+            android:label="Activity Monitor" >
+        </service>
+        <service
+            android:name=".services.ButtonOverlayService"
+            android:icon="@mipmap/ic_launcher"
+            android:label="MenuOverrideService" >
+        </service>
+
+        <activity
+            android:name=".activities.ExtensionLauncherActivity"
+            android:icon="@mipmap/ic_launcher"
+            android:label="Extension Launcher" >
+        </activity>
+
+        <service android:name=".services.MessageService" >
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+            </intent-filter>
+        </service>
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <activity
+            android:name=".activities.MultiExtensionActivity"
+            android:label="@string/title_activity_multi_extension" />
+        <activity
+            android:name=".activities.QuadExtensionActivity"
+            android:label="@string/title_activity_quad_extension" />
+        <activity
+            android:name=".activities.DualExtensionActivity"
+            android:label="@string/title_activity_dual_extension" />
+    </application>
+
+</manifest>

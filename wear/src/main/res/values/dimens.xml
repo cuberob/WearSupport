@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="digital_text_size">40dp</dimen>
+    <dimen name="digital_text_size_round">45dp</dimen>
+    <dimen name="step_count_text_size">30dp</dimen>
+    <dimen name="step_count_text_size_round">35dp</dimen>
+
+
+    <dimen name="digital_x_offset">15dp</dimen>
+    <dimen name="digital_x_offset_round">25dp</dimen>
+    <dimen name="digital_y_offset">90dp</dimen>
+
+    <dimen name="app_name_textbox_round_width">50dp</dimen>
+    <dimen name="app_name_textbox_square_margin">6dp</dimen>
+
+
+    <!-- TEXT SIZES -->
+    <dimen name="text_size_small">8dp</dimen>
+    <dimen name="text_size_medium">10dp</dimen>
+    <dimen name="text_size_large">12dp</dimen>
+    <dimen name="text_size_extra_large">14dp</dimen>
+
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+</resources>

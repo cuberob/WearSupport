@@ -1,0 +1,110 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="Remote Monitoring">
+
+        <CheckBoxPreference
+            android:key="@string/request_enabled_setting_key"
+            android:title="Remote checkup"
+            android:summary="Enable this to allow activity data to be requested remotely via SMS"
+            android:defaultValue="false" />
+
+        <!-- NOTE: EditTextPreference accepts EditText attributes. -->
+        <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
+        <EditTextPreference
+            android:key="@string/request_password_setting_key"
+            android:title="Remote Monitor Password"
+            android:defaultValue="wearsupport"
+            android:selectAllOnFocus="true"
+            android:inputType="textVisiblePassword"
+            android:singleLine="true"
+            android:maxLines="1" />
+
+        <EditTextPreference
+            android:key="@string/no_activity_warning_phone_number"
+            android:title="Inactivity warning"
+            android:defaultValue=""
+            android:selectAllOnFocus="true"
+            android:inputType="phone"
+            android:singleLine="true"
+            android:maxLines="1" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Watch Visuals">
+
+        <ListPreference
+            android:key="@string/system_font_size"
+            android:title="System Text Size"
+            android:defaultValue="2"
+            android:entries="@array/pref_text_size_titles"
+            android:entryValues="@array/pref_text_size_values"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null" />
+
+        <CheckBoxPreference
+            android:key="@string/show_step_count"
+            android:title="Show step count"
+            android:summary="Display the exact amount of steps on the watchface"
+            android:contentDescription="When enabled shows the current step count on the watch face"
+            android:defaultValue="true" />
+
+        <CheckBoxPreference
+            android:key="@string/analog_time_mode"
+            android:title="Analog Time Display"
+            android:summary="Show the time with a minute and hour hand"
+            android:contentDescription="When enabled the time is displayed with a minute and hour hand instead of in a digital manner"
+            android:defaultValue="false" />
+
+        <CheckBoxPreference
+            android:key="@string/inverse_display_mode"
+            android:title="Inverse Colors"
+            android:summary="Inverse the of the watch face"
+            android:contentDescription="Enable this to show black text on white backgrounds on the watch, might drain more battery"
+            android:defaultValue="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Extensions">
+
+        <Preference
+            android:title="Extension Manager"
+            android:summary="Configure extension specific settings">
+
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="nl.vu.wearsupport"
+                android:targetClass="nl.vu.wearsupport.activities.ExtensionManagerActivity"
+                />
+
+        </Preference>
+    </PreferenceCategory>
+
+
+    <PreferenceCategory
+        android:title="Activity">
+
+        <EditTextPreference
+            android:key="@string/daily_step_goal"
+            android:title="Daily step goal"
+            android:summary="The amount of steps required to complete the daily goal"
+            android:defaultValue="5000"
+            android:inputType="number" />
+
+        <Preference
+            android:title="Activity History"
+            android:summary="An overview of the users history activity">
+
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="nl.vu.wearsupport"
+                android:targetClass="nl.vu.wearsupport.activities.DailyActivityOverviewActivity"
+                />
+
+        </Preference>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

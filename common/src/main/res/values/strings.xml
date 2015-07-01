@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name" translatable="false">Common</string>
+
+
+    <!-- Setting keys -->
+
+    <!-- Key used to synchronize the font size setting -->
+    <string name="system_font_size" translatable="false">SYSTEM_FONT_SIZE</string>
+    <!-- Key used to synchronize the daily step goal -->
+    <string name="daily_step_goal" translatable="false">DAILY_STEP_GOAL</string>
+    <!-- Key used to synchronize the daily step goal -->
+    <string name="show_step_count" translatable="false">SHOW_STEP_COUNT</string>
+    <!-- Key used to synchronize the time display mode -->
+    <string name="analog_time_mode">ANALOG_TIME_MODE</string>
+    <!-- Key used to synchronize the display mode (black on white or the inverse) -->
+    <string name="inverse_display_mode">INVERSE_DISPLAY_MODE</string>
+</resources>

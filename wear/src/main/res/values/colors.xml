@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="digital_background">#000000</color>
+    <color name="digital_background_inverse">#ffffffff</color>
+
+    <color name="digital_text">#ffffff</color>
+    <color name="digital_text_inverse">#ff000000</color>
+
+    <color name="notified_background">#D6AE00</color>
+    <color name="notified_background_inverse">#D6AE00</color>
+</resources>

@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">WearSupport</string>
+    <string name="title_activity_extension_manager">Extension Manager</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_daily_activity_overview">Activity Overview</string>
+    <string name="loading_activity_data">Loading Activity Data...</string>
+    <string name="no_history_data_message">No History Data Yet!</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="steps">"Steps: "</string>
+    <string name="date">"Date: "</string>
+    <string name="activity_data_retrieved">Activity Data Retrieved</string>
+    <string name="no_activity_data_available_yet">No Activity Data available yet.</string>
+
+    <!-- keys used by settings for remote requests -->
+    <string name="request_enabled_setting_key">request_enabled_key</string>
+    <string name="request_password_setting_key">request_password_key</string>
+    <string name="no_activity_warning_phone_number">activity_monitor_number</string>
+    <string name="warning_no_activity_ever_message">Warning: No activity detected using WearSupport.\nThis might happen the first day when no sync has taken place yet.</string>
+    <string name="message_no_activity_warning">Activity Warning: No steps detected yesterday!</string>
+    <string name="message_activity_yesterday_unknown">Activity Warning: Yesterdays activity not synchronized, so activity unknown!</string>
+</resources>

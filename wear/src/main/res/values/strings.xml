@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">WearSupport</string>
+    <string name="watch_name">WearSupport Watch</string>
+    <string name="exit">Exit</string>
+    <string name="title_activity_multi_extension">MultiExtension</string>
+    <string name="title_activity_dual_extension">DualExtension</string>
+    <string name="title_activity_quad_extension">QuadExtension</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="Steps">"Steps: "</string>
+</resources>
