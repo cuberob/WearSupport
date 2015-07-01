@@ -280,9 +280,12 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
             mPaintTools = new PaintTools(CustomWatchFaceService.this, SettingsManager.isInverseMode(CustomWatchFaceService.this));
 
             setWatchFaceStyle(new WatchFaceStyle.Builder(CustomWatchFaceService.this)
-                    .setCardPeekMode(WatchFaceStyle.AMBIENT_PEEK_MODE_HIDDEN)
+                    .setCardPeekMode(WatchFaceStyle.PEEK_MODE_SHORT)
+                    .setAmbientPeekMode(WatchFaceStyle.AMBIENT_PEEK_MODE_HIDDEN)
                     .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
+                    .setPeekOpacityMode(WatchFaceStyle.PEEK_OPACITY_MODE_TRANSLUCENT)
                     .setShowSystemUiTime(false)
+                    .setShowUnreadCountIndicator(false)
                     .build());
 
             mYOffset = getResources().getDimension(R.dimen.digital_y_offset);
