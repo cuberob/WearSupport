@@ -140,12 +140,6 @@ public class ActivityMonitorService extends Service implements SensorEventListen
     }
 
     @Override
-    public boolean onUnbind(Intent intent) {
-        Log.d(TAG, "!!!Activity Monitor Service Unbound!!!");
-        return super.onUnbind(intent);
-    }
-
-    @Override
     public void onDestroy() {
         saveIntermediateSteps();
         mSensorManager.unregisterListener(ActivityMonitorService.this);
@@ -154,7 +148,7 @@ public class ActivityMonitorService extends Service implements SensorEventListen
         super.onDestroy();
     }
 
-    private void saveIntermediateSteps(){
+    public void saveIntermediateSteps(){
         Calendar date = Calendar.getInstance();
         date.setTimeInMillis(System.currentTimeMillis());
         ActivityDataStorage.saveData(getApplicationContext(), date, getTodaysSteps());

@@ -18,7 +18,7 @@ import nl.vu.wearsupport.R;
  * Created by robdeknegt on 28/05/15.
  * This class contains all objects used to draw on the canvas and also provides some helper methods to adjust these objects.
  */
-public class PaintTools {
+public class DrawTools {
 
     public static final int ACTIVITY_PAINT_WIDTH = 20;
 
@@ -38,7 +38,7 @@ public class PaintTools {
     public Bitmap mNotificationBitmap;
     public Bitmap mBatteryLowBitmap;
 
-    public PaintTools(Context context, boolean inverse) {
+    public DrawTools(Context context, boolean inverse) {
         this.context = context.getApplicationContext();
         initPaint(inverse);
     }
