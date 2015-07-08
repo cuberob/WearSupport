@@ -39,14 +39,16 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.WindowInsets;
 
-import java.util.ArrayList;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import nl.vu.wearsupport.R;
 import nl.vu.wearsupport.activities.ExtensionLauncherActivity;
 import nl.vu.wearsupport.objects.DrawTools;
+import nl.vu.wearsupport.services.helpers.BatteryStatusHelper;
+import nl.vu.wearsupport.services.helpers.NotificationHelper;
 import nl.vu.wearsupport.utils.SettingsManager;
+import nl.vu.wearsupport.utils.DisplayUtils;
 
 /**
  * Digital watch face with seconds. In ambient mode, the seconds aren't displayed. On devices with
@@ -68,21 +70,6 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
      * Intent Action, triggered when WearSupport settings have changed
      */
     public static final String ACTION_SETTINGS_CHANGED = "nl.vu.wearsupport.action.SETTINGS_CHANGED";
-
-    /**
-     * Intent Action, triggered when an extension wants to notify the user of new data
-     */
-    public static final String ACTION_PLUGIN_SHOW_NOTIFICATION = "nl.vu.wearsupport.action.PLUGIN_NOTIFICATION";
-
-    /**
-     * Intent Action, triggered when the notification of an extension should be removed
-     */
-    public static final String ACTION_PLUGIN_DISMISS_NOTIFICATION = "nl.vu.wearsupport.action.PLUGIN_DISMISS_NOTIFICATION";
-
-    /**
-     * The extra {@link CustomWatchFaceService#ACTION_PLUGIN_SHOW_NOTIFICATION} or {@link CustomWatchFaceService#ACTION_PLUGIN_DISMISS_NOTIFICATION} receive to indicate which extension wants to show/dismiss it's notification
-     */
-    public static final String EXTRA_PACKAGE_NAME = "package_name";
 
     /**
      * Reference to the ActivityMonitorService to retrieve step/activity data and trigger a save when battery runs low
@@ -108,6 +95,9 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
      * Indicator on whether to draw the time in a digital (default) or analog format, retrieved from the {@link SettingsManager}
      */
     boolean mAnalogTime;
+
+    NotificationHelper mNotificationHelper;
+    BatteryStatusHelper mBatteryStatusHelper;
 
     /**
      * ServiceConnection,  used to setup and destroy connection to {@link ActivityMonitorService}
@@ -136,7 +126,7 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
             mButtonOverlayServiceBinder.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ExtensionLauncherActivity.startExtensionLauncherActivity(CustomWatchFaceService.this, mNotifications);
+                    ExtensionLauncherActivity.startExtensionLauncherActivity(CustomWatchFaceService.this, mNotificationHelper.getNotifications());
                 }
             });
             mButtonOverlayServiceBinder.enableButton(true);
@@ -146,12 +136,6 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
             mButtonOverlayServiceBinder = null;
         }
     };
-
-    /**
-     * List of Strings containing the package names, as received in the {@link nl.vu.wearsupport.services.CustomWatchFaceService.Engine#mActionsBroadcastReceiver}
-     * which currently have a pending notification.
-     */
-    private ArrayList<String> mNotifications = new ArrayList<String>();
 
     /**
      * Initialize the data required to properly draw the watchface and start monitoring the user's activity
@@ -183,10 +167,11 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
     }
 
     /**
-     * Not guaranteed to be called (e.g. when battery removed), but attempt to unbind from connected services
+     * Not guaranteed to be called (e.g. when battery removed), but attempt to unbind from connected services and save steps
      */
     @Override
     public void onDestroy() {
+        mActivityMonitorService.saveIntermediateSteps();
         unbindService(mActivityServiceConnection);
         unbindService(mButtonOverlayServiceConnection);
         super.onDestroy();
@@ -215,21 +200,6 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
         static final int MSG_UPDATE_TIME = 0;
 
         /**
-         * Y Offset of the notification icon, used when the stepcount is set to be visible
-         */
-        static final int NOTIFICATION_ICON_TOP_PADDING_IF_SHOWING_STEPCOUNT = 55;
-
-        /**
-         * Y Offset of the step count, compared to the offset of the digital time
-         */
-        static final int STEP_COUNT_Y_OFFSET = 50;
-
-        /**
-         * Y Offset, how much pixels the battery icon will be drawn from the bottom
-         */
-        static final int BATTERY_BOTTOM_PADDING = 40;
-
-        /**
          * Handler to update the time periodically in interactive mode.
          */
         final Handler mUpdateTimeHandler = new Handler() {
@@ -250,6 +220,11 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
         };
 
         /**
+         * Boolean indicating whether {@link nl.vu.wearsupport.services.CustomWatchFaceService.Engine#mTimeZoneBroadcastReceiver} is registered
+         */
+        boolean mRegisteredTimeZoneReceiver = false;
+
+        /**
          * Receiver that monitors possible changes in the timezone
          */
         final BroadcastReceiver mTimeZoneBroadcastReceiver = new BroadcastReceiver() {
@@ -260,53 +235,26 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
             }
         };
 
-        /**
-         * Boolean indicating whether {@link nl.vu.wearsupport.services.CustomWatchFaceService.Engine#mTimeZoneBroadcastReceiver} is registered
-         */
-        boolean mRegisteredTimeZoneReceiver = false;
-
-
-        /**
-         * Receiver that monitors whether
-         * - A notification is received and should be shown
-         * - A notification dismiss message is received
-         * - Settings regarding the watch face have changed
-         * - The Battery is low
-         * - The Battery is Okay
-         * When any of these action are received it triggers the corresponding handle method
-         */
-        final BroadcastReceiver mActionsBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Log.i(TAG, "Received Broadcast with Action: " + intent.getAction());
-                if (ACTION_PLUGIN_SHOW_NOTIFICATION.equals(intent.getAction())){
-                    handleNewNotification(intent);
-                } else if (ACTION_SETTINGS_CHANGED.equals(intent.getAction())){
-                    refreshFromSettings();
-                } else if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())){
-                    handleBatteryChange(true);
-                } else if (Intent.ACTION_BATTERY_OKAY.equals(intent.getAction())){
-                    handleBatteryChange(false);
-                } else if (ACTION_PLUGIN_DISMISS_NOTIFICATION.equals(intent.getAction())){
-                    handleDismissNotification(intent);
-                }
-            }
-        };
 
         /**
          * Boolean indicating whether the action receiver has been registered
          */
-        boolean mRegisteredActionsReceiver = false;
+        boolean mRegisteredSettingsReceiver = false;
 
         /**
-         *
+         * Receiver that monitors whether
+         * - Settings regarding the watch face have changed
+         * When any of these action are received it triggers the corresponding handle method
          */
-        private void handleBatteryChange(boolean isLow) {
-            mDrawTools.setLowBattery(isLow);
-            if(isLow) {
-                mActivityMonitorService.saveIntermediateSteps(); //Save steps in case the battery will run out before midnight
+        final BroadcastReceiver mSettingsChangedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.i(TAG, "Received Broadcast with Action: " + intent.getAction());
+                if (ACTION_SETTINGS_CHANGED.equals(intent.getAction())){
+                    refreshFromSettings();
+                }
             }
-        }
+        };
 
         /**
          * Refresh how to draw the WatchFace based on data from SettingsManager, triggered when the action {@link #ACTION_SETTINGS_CHANGED} is received
@@ -315,43 +263,8 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
             mShowStepCount = SettingsManager.showStepCount(CustomWatchFaceService.this);
             mDailyStepGoal = SettingsManager.getDailyStepGoal(CustomWatchFaceService.this);
             mAnalogTime = SettingsManager.showTimeAsAnalog(CustomWatchFaceService.this);
-            mDrawTools.updateInverse(SettingsManager.isInverseMode(CustomWatchFaceService.this), getApplicationContext());
-        }
-
-        /**
-         * Method that handles spawning a new notification, triggered when the action {@link #ACTION_PLUGIN_SHOW_NOTIFICATION} is received
-         * @param intent containing the string extra {@link CustomWatchFaceService#EXTRA_PACKAGE_NAME}
-         */
-        private void handleNewNotification(Intent intent) {
-            final String package_name = intent.getStringExtra(EXTRA_PACKAGE_NAME);
-            if(package_name == null || package_name.isEmpty()){
-                Log.e(TAG, "Make sure the intent contains package (\"context.getPackageName()\") as string extra [package_name]!");
-                return;
-            }
-            if(!mNotifications.contains(package_name)) { //Add package name to list of notifications to list of notifications
-                mNotifications.add(package_name);
-                ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(150);
-            }
-            mDrawTools.setNotificationIcon(mNotifications);
+            mDrawTools.setupPaintColors(SettingsManager.isInverseMode(CustomWatchFaceService.this));
             invalidate();
-        }
-
-        /**
-         * Method that handles dismissing a notification, triggered when the action {@link #ACTION_PLUGIN_DISMISS_NOTIFICATION} is received
-         * @param intent containing the string extra {@link CustomWatchFaceService#EXTRA_PACKAGE_NAME}
-         */
-        private void handleDismissNotification(Intent intent) {
-            //Retrieve package name of notification source
-            final String package_name = intent.getStringExtra(EXTRA_PACKAGE_NAME);
-            if(package_name == null || package_name.isEmpty()){
-                Log.e(TAG, "Make sure the intent contains package (\"context.getPackageName()\") as string extra [package_name]!");
-                return;
-            }
-            if(mNotifications.contains(package_name)) {
-                mNotifications.remove(mNotifications.indexOf(package_name));
-                invalidate();
-            }
-            mDrawTools.setNotificationIcon(mNotifications);
         }
 
         /**
@@ -364,14 +277,14 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
          */
         RectF mActivityRect;
 
-        boolean mAmbient;
-
         Time mTime;
 
         int centerX;
         int centerY;
 
-        float mYOffset;
+        float mTimeTopYOffset;
+        float mBatteryBottomYOffset;
+        float mNotificationExtraYOffset;
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -394,9 +307,40 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
                     .setShowUnreadCountIndicator(false)
                     .build());
 
-            mYOffset = getResources().getDimension(R.dimen.digital_y_offset);
+            Resources resources = getResources();
+            mTimeTopYOffset = resources.getDimension(R.dimen.digital_y_offset);
+            mBatteryBottomYOffset = resources.getDimension(R.dimen.battery_bottom_y_offset);
+            mNotificationExtraYOffset = resources.getDimension(R.dimen.notification_y_offset_if_stepcount);
 
             mTime = new Time();
+
+            mNotificationHelper = new NotificationHelper(CustomWatchFaceService.this, new NotificationHelper.NotificationListener() {
+                @Override
+                public void onNotificationReceived(String packageName) {
+                    ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(150);
+                    mDrawTools.updateNotificationIcon(mNotificationHelper.getNotifications());
+                    invalidate();
+                }
+
+                @Override
+                public void onNotificationDismissed(String packageName) {
+                    mDrawTools.updateNotificationIcon(mNotificationHelper.getNotifications());
+                    invalidate();
+                }
+            });
+
+            mBatteryStatusHelper = new BatteryStatusHelper(CustomWatchFaceService.this, new BatteryStatusHelper.BatteryStatusListener() {
+                @Override
+                public void onBatteryChanged(boolean low) {
+                    mDrawTools.updateLowBattery(low);
+                    if(low) {
+                        mActivityMonitorService.saveIntermediateSteps(); //Save steps in case the battery will run out before midnight
+                    }
+                    invalidate();
+                }
+            });
+
+            registerSettingsChangedReceiver();
         }
 
         @Override
@@ -407,11 +351,15 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
         }
 
         /**
-         * Unregisters all possibly registered Broadcastreceivers
+         * Unregisters all possibly registered BroadcastReceivers
          */
         public void unregisterReceivers(){
             unregisterTimeZoneReceiver();
-            unregisterActionsReceiver();
+            unregisterSettingsChangedReceiver();
+            mNotificationHelper.unregisterNotificationReceiver(CustomWatchFaceService.this);
+            mNotificationHelper = null;
+            mBatteryStatusHelper.unregisterBatteryStatusReceiver(CustomWatchFaceService.this);
+            mBatteryStatusHelper = null;
         }
 
         /**
@@ -424,8 +372,6 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
 
             if (visible) {
                 registerTimeZoneReceiver();
-                registerActionsReceiver();
-
                 // Update time zone in case it changed while we weren't visible.
                 mTime.clear(TimeZone.getDefault().getID());
                 mTime.setToNow();
@@ -454,20 +400,16 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
         }
 
         /**
-         * Registers the {@link #mActionsBroadcastReceiver} receiver if it's currently not registered
+         * Registers the {@link #mSettingsChangedReceiver} receiver if it's currently not registered
          */
-        private void registerActionsReceiver(){
-            if(mRegisteredActionsReceiver){
+        private void registerSettingsChangedReceiver(){
+            if(mRegisteredSettingsReceiver){
                 return;
             }
-            mRegisteredActionsReceiver = true;
+            mRegisteredSettingsReceiver = true;
 
             IntentFilter filter = new IntentFilter(ACTION_SETTINGS_CHANGED);
-            filter.addAction(ACTION_PLUGIN_SHOW_NOTIFICATION);
-            filter.addAction(ACTION_PLUGIN_DISMISS_NOTIFICATION);
-            filter.addAction(Intent.ACTION_BATTERY_LOW);
-            filter.addAction(Intent.ACTION_BATTERY_OKAY);
-            CustomWatchFaceService.this.registerReceiver(mActionsBroadcastReceiver, filter);
+            CustomWatchFaceService.this.registerReceiver(mSettingsChangedReceiver, filter);
         }
 
         /**
@@ -483,32 +425,33 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
         }
 
         /**
-         * Unregisters the {@link #mActionsBroadcastReceiver} receiver if it's currently registered
+         * Unregisters the {@link #mSettingsChangedReceiver} receiver if it's currently registered
          */
-        private void unregisterActionsReceiver(){
-            if(!mRegisteredActionsReceiver){
+        private void unregisterSettingsChangedReceiver(){
+            if(!mRegisteredSettingsReceiver){
                 return;
             }
-            mRegisteredActionsReceiver = false;
-            CustomWatchFaceService.this.unregisterReceiver(mActionsBroadcastReceiver);
+            mRegisteredSettingsReceiver = false;
+            CustomWatchFaceService.this.unregisterReceiver(mSettingsChangedReceiver);
             Log.d(TAG, "- Unregistered ActionsBroadcastReceiver -");
         }
 
         @Override
         public void onApplyWindowInsets(WindowInsets insets) {
             super.onApplyWindowInsets(insets);
-
-            // Load resources that have alternate values for round watches.
             Resources resources = CustomWatchFaceService.this.getResources();
 
-            int chinHeight = insets.getSystemWindowInsetBottom(); //30 for moto 360
+            int bottomChinHeight = insets.getSystemWindowInsetBottom(); //30 for moto 360
+            int topChinHeight = insets.getSystemWindowInsetTop();
+            int leftChinHeight = insets.getSystemWindowInsetLeft();
+            int rightChinHeight = insets.getSystemWindowInsetRight();
 
-            final int widthPixels = resources.getDisplayMetrics().widthPixels;
-            final int heightPixels = resources.getDisplayMetrics().heightPixels + chinHeight;
+            final int widthPixels = resources.getDisplayMetrics().widthPixels + leftChinHeight + rightChinHeight;
+            final int heightPixels = resources.getDisplayMetrics().heightPixels + bottomChinHeight + topChinHeight;
             centerX = widthPixels / 2;
             centerY = heightPixels / 2;
 
-            int margin = DrawTools.ACTIVITY_PAINT_WIDTH / 2;
+            float margin = DisplayUtils.DipToPx(getApplicationContext(), DrawTools.ACTIVITY_PAINT_WIDTH_DIP) / 2;
             mActivityRect = new RectF(margin, margin, widthPixels - margin,  heightPixels - margin);
         }
 
@@ -539,11 +482,8 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
         @Override
         public void onAmbientModeChanged(boolean inAmbientMode) {
             super.onAmbientModeChanged(inAmbientMode);
-            if (mAmbient != inAmbientMode) {
-                mAmbient = inAmbientMode;
-                mDrawTools.setLowBitmode(mLowBitAmbient, mAmbient);
-                invalidate();
-            }
+            mDrawTools.setLowBitmode(mLowBitAmbient, inAmbientMode);
+            invalidate();
 
             // Whether the timer should be running depends on whether we're visible (as well as
             // whether we're in ambient mode), so we may need to start or stop the timer.
@@ -557,7 +497,7 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
          */
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
-            // Draw the background.
+            // Draw the background to start with a clean slate
             canvas.drawRect(0, 0, bounds.width(), bounds.height(), mDrawTools.mBackgroundPaint);
 
             drawActivity(canvas);
@@ -577,7 +517,7 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
             }else {
                 // Draw H:MM
                 String text = String.format("%d:%02d", mTime.hour, mTime.minute);
-                canvas.drawText(text, centerX, mYOffset, mDrawTools.mTimeTextPaint);
+                canvas.drawText(text, centerX, mTimeTopYOffset, mDrawTools.mTimeTextPaint);
             }
         }
 
@@ -626,7 +566,7 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
                 int drawableHeight = mDrawTools.mBatteryLowBitmap.getScaledHeight(canvas);
                 int drawableWidth = mDrawTools.mBatteryLowBitmap.getScaledWidth(canvas);
                 final int left = centerX - (drawableWidth / 2);
-                final int top = (centerY * 2) - drawableHeight - BATTERY_BOTTOM_PADDING;
+                final float top = (centerY * 2) - drawableHeight - mBatteryBottomYOffset;
                 canvas.drawBitmap(mDrawTools.mBatteryLowBitmap, left, top, null);
             }
         }
@@ -638,7 +578,7 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
         private void drawActivity(Canvas canvas) {
             if(mActivityMonitorService != null) {
                 if(mShowStepCount && !mAnalogTime) {
-                    canvas.drawText(getString(R.string.Steps) + mActivityMonitorService.getTodaysSteps(), centerX, mYOffset + STEP_COUNT_Y_OFFSET, mDrawTools.mStepTextPaint);
+                    canvas.drawText(getString(R.string.Steps) + mActivityMonitorService.getTodaysSteps(), centerX, (int) (mTimeTopYOffset * 1.5), mDrawTools.mStepTextPaint);
                 }
                 final int sweepAngle = (int) (mActivityMonitorService.getTodaysActivityCompletion(mDailyStepGoal) * 3.6f);
                 canvas.drawArc(mActivityRect, 90, sweepAngle, false, mDrawTools.mActivityPaint);
@@ -656,7 +596,7 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
                 }
                 int height = mDrawTools.mNotificationBitmap.getScaledHeight(canvas);
                 int width = mDrawTools.mNotificationBitmap.getScaledWidth(canvas);
-                int topPadding = mShowStepCount ? NOTIFICATION_ICON_TOP_PADDING_IF_SHOWING_STEPCOUNT : 0;
+                float topPadding = mShowStepCount ? mNotificationExtraYOffset : 0;
                 canvas.drawBitmap(mDrawTools.mNotificationBitmap, centerX - (width / 2), centerY - (height / 2) + topPadding, null);
             }
         }

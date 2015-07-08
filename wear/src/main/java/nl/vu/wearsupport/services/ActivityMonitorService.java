@@ -171,7 +171,7 @@ public class ActivityMonitorService extends Service implements SensorEventListen
     }
 
     private void saveAndResetSteps(){
-        //Since this event is triggered at 00:00 deduct half a day to make sure it is saved for the correct (previous) day
+        //Since this event is triggered at ~00:00 deduct half a day to make sure it is saved for the correct (previous) day
         Calendar date = Calendar.getInstance();
         date.setTimeInMillis(System.currentTimeMillis() - AlarmManager.INTERVAL_HALF_DAY);
         ActivityDataStorage.saveData(getApplicationContext(), date, getTodaysSteps());

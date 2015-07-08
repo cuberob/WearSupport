@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import nl.vu.common.object.AppInfo;
 import nl.vu.wearsupport.utils.PluginUtils;
@@ -15,23 +16,21 @@ import nl.vu.wearsupport.utils.PluginUtils;
  */
 public class ExtensionLauncherActivity extends Activity {
 
-    public static final String TAG = "Ext.LauncherActivity";
+    public static final String TAG = ExtensionLauncherActivity.class.getSimpleName();
     public static final String PACKAGES_EXTRA_KEY = "packages";
 
-    ArrayList<String> mPackagesWithNotification;
 
-
-    public static void startExtensionLauncherActivity(Context context, ArrayList<String> mPackageNamesWithNotifications){
+    public static void startExtensionLauncherActivity(Context context, List<String> mPackageNamesWithNotifications){
         Intent i = new Intent(context, ExtensionLauncherActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        i.putExtra(PACKAGES_EXTRA_KEY, mPackageNamesWithNotifications);
+        i.putExtra(PACKAGES_EXTRA_KEY, (ArrayList<String>) mPackageNamesWithNotifications);
         context.startActivity(i);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mPackagesWithNotification = (ArrayList<String>) getIntent().getSerializableExtra(PACKAGES_EXTRA_KEY);
+        ArrayList<String> mPackagesWithNotification = (ArrayList<String>) getIntent().getSerializableExtra(PACKAGES_EXTRA_KEY);
         startCorrectLauncherActivity(PluginUtils.getExtensions(ExtensionLauncherActivity.this, mPackagesWithNotification));
     }
 
