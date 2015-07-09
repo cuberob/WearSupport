@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.vu.common.object.AppInfo;
-import nl.vu.wearsupport.utils.PluginUtils;
+import nl.vu.wearsupport.objects.Notification;
+import nl.vu.wearsupport.utils.ExtensionUtils;
 
 /**
  * Created by robdeknegt on 15/05/15.
@@ -17,21 +18,21 @@ import nl.vu.wearsupport.utils.PluginUtils;
 public class ExtensionLauncherActivity extends Activity {
 
     public static final String TAG = ExtensionLauncherActivity.class.getSimpleName();
-    public static final String PACKAGES_EXTRA_KEY = "packages";
+    public static final String PACKAGES_EXTRA_KEY = "notifications";
 
 
-    public static void startExtensionLauncherActivity(Context context, List<String> mPackageNamesWithNotifications){
+    public static void startExtensionLauncherActivity(Context context, List<Notification> mPackageNamesWithNotifications){
         Intent i = new Intent(context, ExtensionLauncherActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        i.putExtra(PACKAGES_EXTRA_KEY, (ArrayList<String>) mPackageNamesWithNotifications);
+        i.putExtra(PACKAGES_EXTRA_KEY, (ArrayList<Notification>) mPackageNamesWithNotifications);
         context.startActivity(i);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ArrayList<String> mPackagesWithNotification = (ArrayList<String>) getIntent().getSerializableExtra(PACKAGES_EXTRA_KEY);
-        startCorrectLauncherActivity(PluginUtils.getExtensions(ExtensionLauncherActivity.this, mPackagesWithNotification));
+        ArrayList<Notification> mPackagesWithNotification = (ArrayList<Notification>) getIntent().getSerializableExtra(PACKAGES_EXTRA_KEY);
+        startCorrectLauncherActivity(ExtensionUtils.getExtensions(ExtensionLauncherActivity.this, mPackagesWithNotification));
     }
 
     private void startCorrectLauncherActivity(AppInfo[] mAppInfoList){

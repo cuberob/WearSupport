@@ -9,6 +9,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import nl.vu.wearsupport.objects.Notification;
+
 /**
  * Created by robdeknegt on 08/07/15.
  */
@@ -32,8 +34,8 @@ public class NotificationHelper {
     public static final String ACTION_PLUGIN_DISMISS_NOTIFICATION = "nl.vu.wearsupport.action.PLUGIN_DISMISS_NOTIFICATION";
 
     public interface NotificationListener {
-        void onNotificationReceived(String packageName);
-        void onNotificationDismissed(String packageName);
+        void onNotificationReceived(Notification notification);
+        void onNotificationDismissed(Notification notification);
     }
 
 
@@ -43,10 +45,10 @@ public class NotificationHelper {
      * List of Strings containing the package names, as received in the {@link nl.vu.wearsupport.services.CustomWatchFaceService.Engine#mSettingsChangedReceiver}
      * which currently have a pending notification.
      */
-    private List<String> mNotifications;
+    private List<Notification> mNotifications;
 
     public NotificationHelper(Context context, NotificationListener listener) {
-        mNotifications = new ArrayList<String>();
+        mNotifications = new ArrayList<Notification>();
         this.mListener = listener;
         IntentFilter filter = new IntentFilter(ACTION_PLUGIN_SHOW_NOTIFICATION);
         filter.addAction(ACTION_PLUGIN_DISMISS_NOTIFICATION);
@@ -77,9 +79,10 @@ public class NotificationHelper {
             Log.e(TAG, "Make sure the intent contains package (\"context.getPackageName()\") as string extra [package_name]!");
             return;
         }
-        if(!mNotifications.contains(package_name)) { //Add package name to list of notifications to list of notifications
-            mNotifications.add(package_name);
-            if(mListener != null){mListener.onNotificationReceived(package_name);}
+        Notification incomingNotification = new Notification(package_name);
+        if(!mNotifications.contains(incomingNotification)) { //Add package name to list of notifications to list of notifications
+            mNotifications.add(incomingNotification);
+            if(mListener != null){mListener.onNotificationReceived(incomingNotification);}
         }
     }
 
@@ -96,13 +99,14 @@ public class NotificationHelper {
             Log.e(TAG, "Make sure the intent contains package (\"context.getPackageName()\") as string extra [package_name]!");
             return;
         }
-        if(mNotifications.contains(package_name)) {
-            mNotifications.remove(mNotifications.indexOf(package_name));
-            if(mListener != null){mListener.onNotificationDismissed(package_name);}
+        Notification dismissNotification = new Notification(package_name);
+        if(mNotifications.contains(dismissNotification)) {
+            mNotifications.remove(mNotifications.indexOf(dismissNotification));
+            if(mListener != null){mListener.onNotificationDismissed(dismissNotification);}
         }
     }
 
-    public List<String> getNotifications(){
+    public List<Notification> getNotifications(){
         return mNotifications;
     }
 }

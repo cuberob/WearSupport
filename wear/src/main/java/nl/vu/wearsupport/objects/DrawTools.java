@@ -100,13 +100,13 @@ public class DrawTools {
 
 
     /**
-     * @param notificationPackageNames Package names of the applications with a pending notification
+     * @param notifications Package names of the applications with a pending notification
      */
-    public void updateNotificationIcon(List<String> notificationPackageNames){
-        if(notificationPackageNames.size() == 0) { //No notification, clear all icons
+    public void updateNotificationIcon(List<Notification> notifications){
+        if(notifications.size() == 0) { //No notification, clear all icons
             this.mNotificationBitmap = null;
-        }else if(notificationPackageNames.size() == 1){ //Only one 1 notification, use apps icon
-            this.mNotificationBitmap = getIconBitMap(notificationPackageNames.get(0));
+        }else if(notifications.size() == 1){ //Only one 1 notification, use apps icon
+            this.mNotificationBitmap = getIconBitMap(notifications.get(0).getPackageName());
         }else{ //More than 1 notification, use general notification icon
             mNotificationBitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_notifications);
         }

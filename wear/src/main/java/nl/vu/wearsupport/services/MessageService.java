@@ -19,7 +19,9 @@ import com.google.android.gms.wearable.WearableListenerService;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import nl.vu.common.keys.MessageKeys;
 import nl.vu.common.keys.SettingKeys;
+import nl.vu.wearsupport.services.helpers.BatteryStatusHelper;
 import nl.vu.wearsupport.utils.SettingsManager;
 
 /**
@@ -50,6 +52,12 @@ public class MessageService extends WearableListenerService{
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
+        String path = messageEvent.getPath();
+        if(MessageKeys.FAKE_BATTERY_LOW.equals(path)){
+            BatteryStatusHelper.fakeBattery(getApplicationContext(), true);
+        } else if (MessageKeys.FAKE_BATTERY_OK.equals(path)){
+            BatteryStatusHelper.fakeBattery(getApplicationContext(), false);
+        }
         super.onMessageReceived(messageEvent);
     }
 

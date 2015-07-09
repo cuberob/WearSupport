@@ -57,4 +57,9 @@ public class BatteryStatusHelper {
             }
         }
     };
+
+    public static void fakeBattery(Context c, boolean low){
+        Intent i = low ? new Intent(Intent.ACTION_BATTERY_LOW) : new Intent(Intent.ACTION_BATTERY_OKAY);
+        c.sendBroadcast(i);
+    }
 }

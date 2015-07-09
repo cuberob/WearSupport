@@ -17,7 +17,7 @@ import android.widget.TextView;
 
 import nl.vu.common.object.AppInfo;
 import nl.vu.wearsupport.R;
-import nl.vu.wearsupport.utils.PluginUtils;
+import nl.vu.wearsupport.utils.ExtensionUtils;
 import nl.vu.wearsupport.utils.SettingsManager;
 
 /**
@@ -167,7 +167,7 @@ public class QuadExtensionActivity extends Activity {
     }
 
     private void handleClick(ComponentName componentName) {
-        PluginUtils.startPlugin(QuadExtensionActivity.this, componentName);
+        ExtensionUtils.startPlugin(QuadExtensionActivity.this, componentName);
     }
 
     public static void startQuadExtensionActivity(Context context, AppInfo[] appInfoList){

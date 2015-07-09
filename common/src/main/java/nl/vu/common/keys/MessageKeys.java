@@ -6,7 +6,12 @@ package nl.vu.common.keys;
 public class MessageKeys {
 
     /**
-     * Path used when requesting activity data from watch to phone
+     * Path used to simulate low battery
      */
-    public static final String REQUEST_ACTIVITY_DATA_PATH = "/request/activity_data";
+    public static final String FAKE_BATTERY_LOW = "/battery/low";
+
+    /**
+     * Path used to simulate okay battery
+     */
+    public static final String FAKE_BATTERY_OK = "/battery/ok";
 }

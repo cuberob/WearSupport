@@ -45,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 import nl.vu.wearsupport.R;
 import nl.vu.wearsupport.activities.ExtensionLauncherActivity;
 import nl.vu.wearsupport.objects.DrawTools;
+import nl.vu.wearsupport.objects.Notification;
 import nl.vu.wearsupport.services.helpers.BatteryStatusHelper;
 import nl.vu.wearsupport.services.helpers.NotificationHelper;
 import nl.vu.wearsupport.utils.SettingsManager;
@@ -316,14 +317,14 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
 
             mNotificationHelper = new NotificationHelper(CustomWatchFaceService.this, new NotificationHelper.NotificationListener() {
                 @Override
-                public void onNotificationReceived(String packageName) {
+                public void onNotificationReceived(Notification noti) {
                     ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(150);
                     mDrawTools.updateNotificationIcon(mNotificationHelper.getNotifications());
                     invalidate();
                 }
 
                 @Override
-                public void onNotificationDismissed(String packageName) {
+                public void onNotificationDismissed(Notification noti) {
                     mDrawTools.updateNotificationIcon(mNotificationHelper.getNotifications());
                     invalidate();
                 }
@@ -578,7 +579,7 @@ public class CustomWatchFaceService extends CanvasWatchFaceService {
         private void drawActivity(Canvas canvas) {
             if(mActivityMonitorService != null) {
                 if(mShowStepCount && !mAnalogTime) {
-                    canvas.drawText(getString(R.string.Steps) + mActivityMonitorService.getTodaysSteps(), centerX, (int) (mTimeTopYOffset * 1.5), mDrawTools.mStepTextPaint);
+                    canvas.drawText(getString(R.string.Steps) + mActivityMonitorService.getTodaysSteps(), centerX, (int) (mTimeTopYOffset * 1.4), mDrawTools.mStepTextPaint);
                 }
                 final int sweepAngle = (int) (mActivityMonitorService.getTodaysActivityCompletion(mDailyStepGoal) * 3.6f);
                 canvas.drawArc(mActivityRect, 90, sweepAngle, false, mDrawTools.mActivityPaint);

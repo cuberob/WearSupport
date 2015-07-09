@@ -11,13 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.vu.common.object.AppInfo;
+import nl.vu.wearsupport.objects.Notification;
 
 /**
  * Created by robdeknegt on 28/05/15.
  */
-public class PluginUtils {
+public class ExtensionUtils {
 
-    public static final String TAG = "PluginUtils";
+    public static final String TAG = ExtensionUtils.class.getSimpleName();
     public static final String LAUNCH_PLUGIN_ACTION_FILTER = "nl.vu.wearsupport.intent.action.LAUNCH_PLUGIN";
 
     public static void startPlugin(Context context, ComponentName componentName){
@@ -28,7 +29,7 @@ public class PluginUtils {
         context.startActivity(i);
     }
 
-    public static AppInfo[] getExtensions(Context context, List<String> packageNamesWithNotification){
+    public static AppInfo[] getExtensions(Context context, List<Notification> packageNamesWithNotification){
         ArrayList<AppInfo> mAppInfoList = new ArrayList<AppInfo>();
 
         final Intent mainIntent = new Intent(LAUNCH_PLUGIN_ACTION_FILTER, null);
@@ -39,7 +40,7 @@ public class PluginUtils {
             final String packageName = resolveInfo.activityInfo.applicationInfo.packageName;
             final AppInfo appInfo = new AppInfo(resolveInfo.loadLabel(packageManager).toString(),
                     new ComponentName(packageName, resolveInfo.activityInfo.name),
-                    packageNamesWithNotification.contains(packageName));
+                    packageNamesWithNotification.contains(new Notification(packageName)));
             mAppInfoList.add(appInfo);
             Log.i(TAG, appInfo.toString());
         }

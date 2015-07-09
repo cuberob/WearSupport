@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import nl.vu.common.object.AppInfo;
 import nl.vu.wearsupport.R;
-import nl.vu.wearsupport.utils.PluginUtils;
+import nl.vu.wearsupport.utils.ExtensionUtils;
 import nl.vu.wearsupport.utils.SettingsManager;
 
 /**
@@ -92,7 +92,7 @@ public class DualExtensionActivity extends Activity {
     }
 
     private void handleClick(ComponentName componentName) {
-        PluginUtils.startPlugin(DualExtensionActivity.this, componentName);
+        ExtensionUtils.startPlugin(DualExtensionActivity.this, componentName);
     }
 
     private void findViews(){
