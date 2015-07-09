@@ -13,6 +13,7 @@ import android.util.Log;
 public class BatteryStatusHelper {
 
     private static final String TAG = BatteryStatusHelper.class.getSimpleName();
+    public static final String ACTION_FAKE_LOW_BATTERY = "nl.vu.wearsupport.action.FAKE_LOW_BATTERY";
 
     public interface BatteryStatusListener{
         void onBatteryChanged(boolean low);
@@ -25,6 +26,7 @@ public class BatteryStatusHelper {
         initBatteryCheck(context);
         IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_LOW);
         filter.addAction(Intent.ACTION_BATTERY_OKAY);
+        filter.addAction(ACTION_FAKE_LOW_BATTERY);
         context.registerReceiver(BROADCAST_RECEIVER, filter);
     }
 
@@ -54,12 +56,14 @@ public class BatteryStatusHelper {
                 if(mListener != null){mListener.onBatteryChanged(true);}
             } else if (Intent.ACTION_BATTERY_OKAY.equals(intent.getAction())){
                 if(mListener != null){mListener.onBatteryChanged(false);}
+            } else if (ACTION_FAKE_LOW_BATTERY.equals(intent.getAction())){
+                if(mListener != null){mListener.onBatteryChanged(true);}
             }
         }
     };
 
-    public static void fakeBattery(Context c, boolean low){
-        Intent i = low ? new Intent(Intent.ACTION_BATTERY_LOW) : new Intent(Intent.ACTION_BATTERY_OKAY);
+    public static void fakeBattery(Context c){
+        Intent i = new Intent(ACTION_FAKE_LOW_BATTERY);
         c.sendBroadcast(i);
     }
 }

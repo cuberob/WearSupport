@@ -20,4 +20,5 @@
     <string name="warning_no_activity_ever_message">Warning: No activity detected using WearSupport.\nThis might happen the first day when no sync has taken place yet.</string>
     <string name="message_no_activity_warning">Activity Warning: No steps detected yesterday!</string>
     <string name="message_activity_yesterday_unknown">Activity Warning: Yesterdays activity not synchronized, so activity unknown!</string>
+    <string name="fake_battery_low">battery_demo</string>
 </resources>

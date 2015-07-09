@@ -54,9 +54,7 @@ public class MessageService extends WearableListenerService{
     public void onMessageReceived(MessageEvent messageEvent) {
         String path = messageEvent.getPath();
         if(MessageKeys.FAKE_BATTERY_LOW.equals(path)){
-            BatteryStatusHelper.fakeBattery(getApplicationContext(), true);
-        } else if (MessageKeys.FAKE_BATTERY_OK.equals(path)){
-            BatteryStatusHelper.fakeBattery(getApplicationContext(), false);
+            BatteryStatusHelper.fakeBattery(getApplicationContext());
         }
         super.onMessageReceived(messageEvent);
     }

@@ -107,4 +107,16 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+        android:title="Debug &amp; Demo">
+
+        <Preference
+            android:title="Fake Low Battery"
+            android:summary="Click to fake low battery in WearSupport. Restart watchface to reset."
+            android:key="@string/fake_battery_low">
+
+        </Preference>
+
+    </PreferenceCategory>
+
 </PreferenceScreen>
